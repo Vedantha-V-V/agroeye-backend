@@ -4,7 +4,7 @@
 # Run: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 # ============================================================
 
-import os, glob
+import os, glob, base64
 from pathlib import Path
 from datetime import datetime
 
@@ -94,6 +94,10 @@ def infer():
     top     = classifier(img, top_k=1)[0]
     parsed  = parse_label(top["label"], top["score"])
 
+    with open(frame_path, "rb") as f:
+        frame_bytes = f.read()
+        frame_base64 = base64.b64encode(frame_bytes).decode("utf-8")
+
     state["last_frame"] = str(frame_path)
 
     return {
@@ -101,5 +105,6 @@ def infer():
         "confidence":      round(top["score"], 3),
         "timestamp":       datetime.utcnow().isoformat() + "Z",
         "source_frame":    frame_path.name,
-        "model_connected": True
+        "model_connected": True,
+        "frame_base64":    frame_base64
     }
